@@ -1,30 +1,52 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:testsea/page/auth_page.dart';
+import 'package:testsea/page/verify_email_page.dart';
+import 'package:testsea/provider/google_sign_in.dart';
+import 'package:testsea/utils.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyCHrCfOOnNgydPcM8UO_Js6iw8am6VA5A8",
+          authDomain: "flutter-web-5707b.firebaseapp.com",
+          projectId: "flutter-web-5707b",
+          storageBucket: "flutter-web-5707b.appspot.com",
+          messagingSenderId: "927359768039",
+          appId: "1:927359768039:web:b2bc5b27fc6b7af4145942",
+          measurementId: "G-RNXTLR7P4X"),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
   runApp(const MyApp());
 }
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+  static const String title = 'Flutter FirebaseAuth Basic';
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Web',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+    return ChangeNotifierProvider(
+      create: (context) => GoogleSignInProvider(),
+      child: MaterialApp(
+        navigatorKey: navigatorKey,
+        scaffoldMessengerKey: Utils.messengerKey,
+        debugShowCheckedModeBanner: false,
+        title: title,
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: MyHomePage(),
       ),
-      home: const MyHomePage(),
     );
   }
 }
@@ -37,28 +59,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController controller = TextEditingController();
-  String? input;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(
-        input.toString(),
-        style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-      )),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: TextField(
-              onChanged: (value) {
-                setState(() {
-                  input = value;
-                });
-              },
-              controller: controller),
-        ),
-      ),
+      backgroundColor: Colors.grey,
+      body: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return const Center(child: Text("エラー"));
+            } else if (snapshot.hasData) {
+              return const VerifyEmailPage();
+            } else {
+              return const AuthPage();
+            }
+          }),
     );
   }
 }

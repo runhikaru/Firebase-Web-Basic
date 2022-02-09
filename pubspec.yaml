@@ -35,6 +35,18 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
 
+  intl: any
+  image_picker: any
+  firebase_core: any
+  firebase_auth: any
+  #cloud_firestore: any
+  google_sign_in: any
+  #flutter_signin_button: any
+  provider: any
+  email_validator: any
+  #Google Icon
+  font_awesome_flutter: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
